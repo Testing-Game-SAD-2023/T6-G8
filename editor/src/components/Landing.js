@@ -20,6 +20,8 @@ import LanguagesDropdown from "./LanguagesDropdown";
 import App from "../App";
 import { waitFor } from "@testing-library/react";
 
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+
 const ExampleClass = `
 import java.util.ArrayList;
 import java.util.List;
@@ -436,15 +438,27 @@ const Landing = () => {
   };
   const handleCompile = () => {
     setProcessing(true);
+    var markers = [{
+      severity: monaco.MarkerSeverity.Warning,
+      message: "Some warning",
+      startLineNumber: 1,
+      startColumn: 1,
+      endLineNumber: 1,
+      endColumn: monaco.editor.getModel().getLineLength(1) + 1
+    }];
+    monaco.editor.setModelMarkers(monaco.editor.getModel(), "owner", markers);
+    markers[0].severity = monaco.MarkerSeverity.Error; // No effect
     var xhttp = new XMLHttpRequest();
-    xhttp.open("GET","https://www.eclemma.org/jacoco/trunk/coverage/org.jacoco.examples/org.jacoco.examples/ClassInfo.java.html",true);
+    let url = 'https://jsonplaceholder.typicode.com/posts';
+    //let url = "https://www.eclemma.org/jacoco/trunk/coverage/org.jacoco.examples/org.jacoco.examples/ClassInfo.java.html";
+    xhttp.open("GET",url);
     xhttp.send();
     xhttp.onreadystatechange = function(){
       //if (this.readyState==4 && this.status==200){
         //var automobile = JSON.parse(xhttp.responseText);
         //document.getElementById("dati-file").innerHTML = automobile.marca + ' ' +
         //automobile.modello + ' ' + automobile.colore + ' ' + automobile.alimentazione; 
-        document.getElementById("Class-Window").innerHTML = this.responseText;
+        //document.getElementById("Class-Window").innerHTML = this.response;
       //}
       //else{
         //document.getElementById("dati-file").innerHTML = "niente";
