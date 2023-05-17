@@ -23,7 +23,7 @@ const ClassWindow = ({ onChange, language, code, theme }) => {
 
   return (
       <div id="Class-Window" className="overlay rounded-md overflow-hidden w-full h-full shadow-4xl">
-        <Editor
+        <Editor id = "Editor Class"
             height="50vh"
             width={`100%`}
             language={language}

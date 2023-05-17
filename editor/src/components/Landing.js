@@ -438,7 +438,7 @@ const Landing = () => {
   };
   const handleCompile = () => {
     setProcessing(true);
-    var markers = [{
+    /*var markers = [{
       severity: monaco.MarkerSeverity.Warning,
       message: "Some warning",
       startLineNumber: 1,
@@ -447,24 +447,182 @@ const Landing = () => {
       endColumn: monaco.editor.getModel().getLineLength(1) + 1
     }];
     monaco.editor.setModelMarkers(monaco.editor.getModel(), "owner", markers);
-    markers[0].severity = monaco.MarkerSeverity.Error; // No effect
-    var xhttp = new XMLHttpRequest();
+    markers[0].severity = monaco.MarkerSeverity.Error; // No effect */
+    
+    /*var xhttp = new XMLHttpRequest();
     let url = 'https://jsonplaceholder.typicode.com/posts';
     //let url = "https://www.eclemma.org/jacoco/trunk/coverage/org.jacoco.examples/org.jacoco.examples/ClassInfo.java.html";
     xhttp.open("GET",url);
     xhttp.send();
     xhttp.onreadystatechange = function(){
-      //if (this.readyState==4 && this.status==200){
+      if (this.readyState==4 && this.status==200){
         //var automobile = JSON.parse(xhttp.responseText);
         //document.getElementById("dati-file").innerHTML = automobile.marca + ' ' +
         //automobile.modello + ' ' + automobile.colore + ' ' + automobile.alimentazione; 
-        //document.getElementById("Class-Window").innerHTML = this.response;
-      //}
-      //else{
-        //document.getElementById("dati-file").innerHTML = "niente";
-      //
+        document.getElementById("Class-Window").innerHTML = this.response;
+      }
+      else{
+        document.getElementById("Class-Window").innerHTML = "niente";
+      }
     
-    };
+    };*/
+
+    /*************************************** */
+
+     /*   <!DOCTYPE html>
+    <html>
+    <head>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs/editor/editor.main.min.css" />
+        <style>
+            #editor {
+                height: 500px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="editor"></div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs/loader.min.js"></script>
+        <script>*/
+            //require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs' }});
+            //require(['vs/editor/editor.main'], function () {
+                // Crea l'istanza di Monaco Editor
+                //var editor = monaco.editor.get(document.getElementById('Editor Class'));
+                //editor.language='xml';
+                //monaco.editor.setModelLanguage(editor,'xml');
+                /* {
+                  value: '',
+                  language: 'xml'
+                });*/
+    /**/
+
+    // Carica il file XML di copertura Jacoco
+    var xhttp = new XMLHttpRequest();
+    //let url = 'https://jsonplaceholder.typicode.com/posts';
+    let url = "https://www.eclemma.org/jacoco/trunk/coverage/org.jacoco.examples/org.jacoco.examples/ClassInfo.java.html";
+    //let url = "./sample.xml"
+    xhttp.open("GET",url);
+    xhttp.send();
+
+    
+
+    xhttp.onreadystatechange = function(){
+      if (this.readyState==4 && this.status==200){
+        //var automobile = JSON.parse(xhttp.responseText);
+        //document.getElementById("dati-file").innerHTML = automobile.marca + ' ' +
+        //automobile.modello + ' ' + automobile.colore + ' ' + automobile.alimentazione; 
+        document.getElementById("Editor Class").innerHTML = this.responseText;
+        /*var xml = xhttp.responseXML;
+        var coverageData = parseJacocoCoverage(xml);
+        var coverageText = JSON.stringify(coverageData, null, 2);
+        editor.setValue(coverageText);*/
+      }
+      else{
+        document.getElementById("Editor Class").innerHTML = xhttp.status + " " + xhttp.readyState;
+      }
+    }
+
+    /*var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open('GET', 'https://jsonplaceholder.typicode.com/posts');
+    xmlhttp.send();
+    xmlhttp.onreadystatechange = function () {
+        if (this.readyState === 4 && this.status === 200) {
+            var xml = xmlhttp.responseXML;
+            //var coverageData = parseJacocoCoverage(xml);
+            //var coverageText = JSON.stringify(coverageData, null, 2);
+            //editor.setValue(coverageText);
+        }
+        else{
+          document.getElementById("Class-Window").innerHTML="niente";
+        }
+    };*/
+              
+
+                // Funzione per analizzare il file XML di copertura Jacoco
+                function parseJacocoCoverage(xml, editor) {
+                  var coverageData = [];
+              
+                  // Esempio di iterazione su tutti gli elementi "<class>"
+                  var classElements = xml.getElementsByTagName('class');
+                  for (var i = 0; i < classElements.length; i++) {
+                      var classElement = classElements[i];
+                      var className = classElement.getAttribute('name');
+              
+                      // Esempio di estrazione della copertura delle linee di codice
+                      var lineCoverageElement = classElement.getElementsByTagName('line')[0];
+                      var lineCoverage = parseFloat(lineCoverageElement.getAttribute('coverage'));
+              
+                      // Esempio di estrazione delle informazioni delle linee di codice
+                      var lines = classElement.getElementsByTagName('line');
+                      var lineInfo = {};
+                      for (var j = 0; j < lines.length; j++) {
+                          var line = lines[j];
+                          var lineNumber = parseInt(line.getAttribute('nr'));
+                          var lineCovered = line.getAttribute('ci') === '1';
+              
+                          lineInfo[lineNumber] = lineCovered;
+                      }
+              
+                      // Creazione di un oggetto con le informazioni di copertura
+                      var coverageInfo = {
+                          className: className,
+                          lineCoverage: lineCoverage,
+                          lines: lineInfo
+                      };
+              
+                      coverageData.push(coverageInfo);
+                  }
+              
+                  // Applica le informazioni di copertura all'editor Monaco
+                  applyCoverageToEditor(coverageData, editor);
+              }
+              
+              function applyCoverageToEditor(coverageData, editor) {
+                  var model = editor.getModel();
+                  var decorations = [];
+              
+                  for (var i = 0; i < coverageData.length; i++) {
+                      var coverageInfo = coverageData[i];
+                      var className = coverageInfo.className;
+                      var lines = coverageInfo.lines;
+              
+                      // Esempio di applicazione delle informazioni di copertura alle linee di codice nell'editor Monaco
+                      for (var lineNumber in lines) {
+                          if (lines.hasOwnProperty(lineNumber)) {
+                              var lineCovered = lines[lineNumber];
+              
+                              // Calcola l'intervallo della linea di codice nel modello
+                              var startColumn = 1;
+                              var endColumn = model.getLineMaxColumn(lineNumber);
+                              var range = new monaco.Range(lineNumber, startColumn, lineNumber, endColumn);
+              
+                              // Crea un'opzione decorazione per evidenziare la linea di codice coperta o non coperta
+                              var decoration = {
+                                  range: range,
+                                  options: {
+                                      isWholeLine: true,
+                                      className: lineCovered ? 'covered-line' : 'uncovered-line'
+                                  }
+                              };
+              
+                              decorations.push(decoration);
+                          }
+                      }
+                  }
+              
+                  // Applica le decorazioni all'editor Monaco
+                  editor.deltaDecorations([], decorations);
+              }
+            //});
+                
+            //});
+    //    </script>
+    //</body>
+    //</html>
+
+    /******************************************* */
+
+
     setProcessing(false);
     /*const formData = {
       language_id: language.id,
