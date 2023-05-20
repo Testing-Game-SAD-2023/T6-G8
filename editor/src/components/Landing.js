@@ -14,13 +14,13 @@ import OutputWindow from "./OutputWindow";
 import CustomInput from "./CustomInput";
 import OutputDetails from "./OutputDetails";
 import ClassTest from "./ClassTest";
-import ClassWindow from "./ClassWindow";
+//import ClassWindow from "./ClassWindow";
 import ThemeDropdown from "./ThemeDropdown";
 import LanguagesDropdown from "./LanguagesDropdown";
 import App from "../App";
 import { waitFor } from "@testing-library/react";
 
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import Editor from '@monaco-editor/react';
 
 const ExampleClass = `
 import java.util.ArrayList;
@@ -391,8 +391,57 @@ public class AppTest{
 }
 `;
 
+const urlDefault = "https://www.eclemma.org/jacoco/trunk/coverage/org.jacoco.examples/org.jacoco.examples/ClassInfo.java.html";
+
+const ClassEditor = ({code, language, theme}) => {
+    return (
+    <div id="Class-Window" className="overlay rounded-md overflow-hidden w-full h-full shadow-4xl">
+      <Editor 
+          height="50vh"
+          width={`100%`}
+          language={language}
+          value={code}
+          //path={value}
+          theme={theme}
+          defaultValue="// some comment"
+          options={{readOnly: true}} // rendiamo la classe da testare non modificabile
+      />
+    </div>
+    );
+};
+
+const CoverageWindow = ({code, url}) => {
+    /*/ restituisce la coverage da request html
+    return (
+    <div id="Coverage-Window" className="overlay rounded-md overflow-hidden w-full h-full shadow-4xl"> 
+      <iframe srcdoc={code} height={380} width={570}> 
+      </iframe>
+    </div>
+    ); //*/
+
+    // restituisce la coverage da url
+    return (
+      <div id="Coverage-Window" className="overlay rounded-md overflow-hidden w-full h-full shadow-4xl"> 
+        <iframe src={url} height={380} width={570}> 
+        </iframe>
+      </div>
+      ); //*/
+};
+
+const ClassWindow = ({coverageDisplay, code, language, url, theme}) => {
+    if (!coverageDisplay) {
+        return <ClassEditor theme={theme} code={code} language={language} />;
+    }
+    else
+    {
+        return <CoverageWindow url={url} code={code}/>;
+    }
+};
+
+
 const Landing = () => {
   const [code, setCode] = useState(javascriptDefault);
+  const [classCode, setClassCode] = useState(ExampleClass);
   const [customInput, setCustomInput] = useState("");
   const [outputDetails, setOutputDetails] = useState(null);
   const [classTest, setClassTest] = useState(null);
@@ -401,9 +450,13 @@ const Landing = () => {
   const [processing_save, setProcessingSave] = useState(null);
   const [theme, setTheme] = useState("cobalt");
   const [language, setLanguage] = useState(languageOptions[0]);
+  const [coverageDisplay, setCoverageDisplay] = useState(false);
+  const [url, setUrl] = useState(urlDefault);
 
   const enterPress = useKeyPress("Enter");
   const ctrlPress = useKeyPress("Control");
+
+  
 
   const onSelectChange = (sl) => {
     console.log("selected Option...", sl);
@@ -438,6 +491,33 @@ const Landing = () => {
   };
   const handleCompile = () => {
     setProcessing(true);
+
+    //setCoverageDisplay(true);
+
+    var xhttp = new XMLHttpRequest();
+    //setUrl("./ClassInfo.java.html");
+    xhttp.open("GET",url);
+    xhttp.send();
+
+    xhttp.onreadystatechange = function(){
+        if (this.readyState==4 && this.status==200){
+            setUrl(xhttp.responseURL);
+            setCoverageDisplay(true);
+        }
+        else{
+        }
+    } 
+
+    setOutputDetails("Output...");
+
+    setProcessing(false);
+
+
+    /******************************************************************************************************************************** */
+    /******************************************************************************************************************************** */
+    /******************************************************************************************************************************** */
+
+
     /*var markers = [{
       severity: monaco.MarkerSeverity.Warning,
       message: "Some warning",
@@ -487,20 +567,17 @@ const Landing = () => {
             //require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs' }});
             //require(['vs/editor/editor.main'], function () {
                 // Crea l'istanza di Monaco Editor
-                //var editor = monaco.editor.get(document.getElementById('Editor Class'));
-                //editor.language='xml';
-                //monaco.editor.setModelLanguage(editor,'xml');
-                /* {
-                  value: '',
-                  language: 'xml'
-                });*/
+                
+                //var editor = monaco.editor.getModel(document.getElementById('Class-Window'));
     /**/
 
+    //document.getElementById("Class-Window").innerHTML = editor.getValue();
+
     // Carica il file XML di copertura Jacoco
-    var xhttp = new XMLHttpRequest();
+    /*var xhttp = new XMLHttpRequest();
     //let url = 'https://jsonplaceholder.typicode.com/posts';
-    let url = "https://www.eclemma.org/jacoco/trunk/coverage/org.jacoco.examples/org.jacoco.examples/ClassInfo.java.html";
-    //let url = "./sample.xml"
+    //let url = "https://www.eclemma.org/jacoco/trunk/coverage/org.jacoco.examples/org.jacoco.examples/ClassInfo.java.html";
+    let url = "./sample.xml";
     xhttp.open("GET",url);
     xhttp.send();
 
@@ -508,17 +585,15 @@ const Landing = () => {
 
     xhttp.onreadystatechange = function(){
       if (this.readyState==4 && this.status==200){
-        //var automobile = JSON.parse(xhttp.responseText);
-        //document.getElementById("dati-file").innerHTML = automobile.marca + ' ' +
-        //automobile.modello + ' ' + automobile.colore + ' ' + automobile.alimentazione; 
-        document.getElementById("Editor Class").innerHTML = this.responseText;
-        /*var xml = xhttp.responseXML;
+        //document.getElementById("Class-Window").innerHTML = 'ok';
+        var xml = xhttp.responseXML;
         var coverageData = parseJacocoCoverage(xml);
         var coverageText = JSON.stringify(coverageData, null, 2);
-        editor.setValue(coverageText);*/
+        //editor.setValue(coverageText);
+        //editor.setValue("modifica");
       }
       else{
-        document.getElementById("Editor Class").innerHTML = xhttp.status + " " + xhttp.readyState;
+        //document.getElementById("Class-Window").innerHTML = xhttp.status + " " + xhttp.readyState;
       }
     }
 
@@ -538,7 +613,7 @@ const Landing = () => {
     };*/
               
 
-                // Funzione per analizzare il file XML di copertura Jacoco
+                /*/ Funzione per analizzare il file XML di copertura Jacoco
                 function parseJacocoCoverage(xml, editor) {
                   var coverageData = [];
               
@@ -575,6 +650,7 @@ const Landing = () => {
               
                   // Applica le informazioni di copertura all'editor Monaco
                   applyCoverageToEditor(coverageData, editor);
+                  return coverageData;
               }
               
               function applyCoverageToEditor(coverageData, editor) {
@@ -623,7 +699,7 @@ const Landing = () => {
     /******************************************* */
 
 
-    setProcessing(false);
+    //setProcessing(false);
     /*const formData = {
       language_id: language.id,
       // encode source code in base64
@@ -810,16 +886,16 @@ const Landing = () => {
             Class Under Test
           </h1>
           <div className="flex flex-col w-full h-full justify-start items-end">
-          
             <ClassWindow
-              code={ExampleClass}
-              onChange={null}
+              code={classCode}
+              coverageDisplay={coverageDisplay}
               language={language?.value}
               theme={theme.value}
+              url={url}
             />
           </div>
-          <iframe src="https://www.eclemma.org/jacoco/trunk/coverage/org.jacoco.examples/org.jacoco.examples/ClassInfo.java.html" height="full" width="full">          	
-          </iframe>
+          <div id = "prova" className = "overlay rounded-md overflow-hidden w-full h-full shadow-4xl">
+          </div>
           <OutputWindow outputDetails={outputDetails} />
           <div className="flex flex-col items-end">
           </div>
@@ -828,5 +904,35 @@ const Landing = () => {
       </div>
     </>
   );
+
+  /*return(
+    <>
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+
+      <button
+        onClick={handleCompile}
+        disabled={!code}
+        className={classnames(
+          "mt-4 border-2 border-black z-10 rounded-md shadow-[5px_5px_0px_0px_rgba(0,0,0)] px-12 py-2 hover:shadow transition duration-200 bg-white flex-shrink-0",
+          !code ? "opacity-50" : ""
+        )}
+      >
+        {processing? "Processing..." : "Compile and Execute"}
+      </button>
+
+      <div id = "prova" className="h-80 w-full bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500">
+      </div>
+    </>
+  )*/
 };
 export default Landing;
