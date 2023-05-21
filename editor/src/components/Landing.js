@@ -21,6 +21,7 @@ import App from "../App";
 import { waitFor } from "@testing-library/react";
 
 import Editor from '@monaco-editor/react';
+import '../index.css'
 
 const ExampleClass = `
 import java.util.ArrayList;
@@ -410,6 +411,24 @@ const ClassEditor = ({code, language, theme}) => {
     );
 };
 
+const ClassEditorCoverage = ({code, language, theme, editorDidMount}) => {
+  return (
+  <div id="Class-Window" className="overlay rounded-md overflow-hidden w-full h-full shadow-4xl">
+    <Editor 
+        height="50vh"
+        width={`100%`}
+        language={language}
+        value={code}
+        //path={value}
+        theme={theme}
+        defaultValue="// some comment"
+        options={{readOnly: true}} // rendiamo la classe da testare non modificabile
+        onMount={editorDidMount} // applichiamo le decorations
+    />
+  </div>
+  );
+};
+
 const CoverageWindow = ({code, url}) => {
     /*/ restituisce la coverage da request html
     return (
@@ -428,14 +447,20 @@ const CoverageWindow = ({code, url}) => {
       ); //*/
 };
 
-const ClassWindow = ({coverageDisplay, code, language, url, theme}) => {
+const ClassWindow = ({coverageDisplay, code, language, url, theme, editorDidMount}) => {
     if (!coverageDisplay) {
         return <ClassEditor theme={theme} code={code} language={language} />;
     }
+    // restituiamo la coverage come pagina html
     else
     {
         return <CoverageWindow url={url} code={code}/>;
-    }
+    } //*/
+    /*/ restituiamo la coverage all'interno dell'editor
+    else
+    {
+        return <ClassEditorCoverage theme={theme} code={code} language={language} editorDidMount={editorDidMount}/>;
+    } //*/
 };
 
 
@@ -456,7 +481,39 @@ const Landing = () => {
   const enterPress = useKeyPress("Enter");
   const ctrlPress = useKeyPress("Control");
 
-  
+  const [vars, setVars] = useState({});
+  const [ids, setIds] = useState([]);
+  const { monacoEditor, monaco } = vars;
+
+  async function handleEditorDidMount(monacoEditor, monaco) {
+    setVars({ monacoEditor, monaco });
+  }
+
+  useEffect(() => {
+  if (!monacoEditor || !monaco) {
+      return;
+  }
+
+  const ids = monacoEditor.deltaDecorations(
+      [],
+      [
+      {
+          range: new monaco.Range(2, 1, 4, 1),
+          options: { inlineClassName: "line.covered" }
+      },
+      {
+          range: new monaco.Range(10, 1, 11, 1),
+          options: { inlineClassName: "line.not.covered" }
+      },
+      {
+        range: new monaco.Range(17, 1, 18, 1),
+        options: { inlineClassName: "line.not.covered" }
+      }
+      ]
+  );
+  setIds(ids);
+  return () => monacoEditor.deltaDecorations(ids, []);
+  }, [monacoEditor, monaco]);  
 
   const onSelectChange = (sl) => {
     console.log("selected Option...", sl);
@@ -892,6 +949,7 @@ const Landing = () => {
               language={language?.value}
               theme={theme.value}
               url={url}
+              editorDidMount={handleEditorDidMount}
             />
           </div>
           <div id = "prova" className = "overlay rounded-md overflow-hidden w-full h-full shadow-4xl">
