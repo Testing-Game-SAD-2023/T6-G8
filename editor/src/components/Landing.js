@@ -10,7 +10,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { defineTheme } from "../lib/defineTheme";
 import useKeyPress from "../hooks/useKeyPress";
 import Footer from "./Footer";
-import OutputWindow from "./OutputWindow";
+//import OutputWindow from "./OutputWindow";
 import CustomInput from "./CustomInput";
 import OutputDetails from "./OutputDetails";
 import ClassTest from "./ClassTest";
@@ -22,6 +22,7 @@ import { waitFor } from "@testing-library/react";
 
 import Editor from '@monaco-editor/react';
 import '../index.css'
+import { Range } from 'monaco-editor';
 
 const ExampleClass = `
 import java.util.ArrayList;
@@ -393,6 +394,8 @@ public class AppTest{
 `;
 
 const urlDefault = "https://www.eclemma.org/jacoco/trunk/coverage/org.jacoco.examples/org.jacoco.examples/ClassInfo.java.html";
+const urlOutput = "https://www.eclemma.org/jacoco/trunk/coverage/org.jacoco.examples/org.jacoco.examples/index.source.html";
+const urlSend = "0.0.0.0"; // server a cui inviare il test scritto dall'utente per il calcolo della coverage
 
 const ClassEditor = ({code, language, theme}) => {
     return (
@@ -451,16 +454,60 @@ const ClassWindow = ({coverageDisplay, code, language, url, theme, editorDidMoun
     if (!coverageDisplay) {
         return <ClassEditor theme={theme} code={code} language={language} />;
     }
-    // restituiamo la coverage come pagina html
+    /*/ restituiamo la coverage come pagina html
     else
     {
         return <CoverageWindow url={url} code={code}/>;
     } //*/
-    /*/ restituiamo la coverage all'interno dell'editor
+    // restituiamo la coverage all'interno dell'editor
     else
     {
         return <ClassEditorCoverage theme={theme} code={code} language={language} editorDidMount={editorDidMount}/>;
     } //*/
+};
+
+const OutputNull = ({}) => {
+  return (
+    <>
+      <h1 className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 mb-2">
+        Output
+      </h1>
+      <div className="w-full h-56 bg-[#1e293b] rounded-md text-white font-normal text-sm overflow-y-auto">
+        
+      </div>
+    </>
+  ); 
+}
+
+const OutputCoverage = ({url}) => {
+  return (
+    <>
+      <h1 className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 mb-2">
+          Output
+      </h1>
+      <div className="overlay rounded-md overflow-hidden w-full h-full shadow-4xl"> 
+        <iframe src={url} height={380} width={570}> 
+        </iframe>
+      </div>
+    </>
+    );
+}
+
+
+const OutputWindow = ({coverageDisplay, url}) => {
+  if (!coverageDisplay) {
+      return <OutputNull  />;
+  }
+  /*/ restituiamo la coverage come pagina html
+  else
+  {
+      return <CoverageWindow url={url} code={code}/>;
+  } //*/
+  // restituiamo la coverage all'interno dell'editor
+  else
+  {
+      return <OutputCoverage url={url}/>;
+  } //*/
 };
 
 
@@ -482,7 +529,7 @@ const Landing = () => {
   const ctrlPress = useKeyPress("Control");
 
   const [vars, setVars] = useState({});
-  const [ids, setIds] = useState([]);
+  const [decorations, setDecorations] = useState([]);
   const { monacoEditor, monaco } = vars;
 
   async function handleEditorDidMount(monacoEditor, monaco) {
@@ -494,7 +541,9 @@ const Landing = () => {
       return;
   }
 
-  const ids = monacoEditor.deltaDecorations(
+  const ids = monacoEditor.deltaDecorations([],decorations);
+
+  /*const ids = monacoEditor.deltaDecorations(
       [],
       [
       {
@@ -510,8 +559,8 @@ const Landing = () => {
         options: { inlineClassName: "line.not.covered" }
       }
       ]
-  );
-  setIds(ids);
+  );*/
+  //setIds(ids);
   return () => monacoEditor.deltaDecorations(ids, []);
   }, [monacoEditor, monaco]);  
 
@@ -551,19 +600,69 @@ const Landing = () => {
 
     //setCoverageDisplay(true);
 
-    var xhttp = new XMLHttpRequest();
-    //setUrl("./ClassInfo.java.html");
-    xhttp.open("GET",url);
-    xhttp.send();
+    // Inviamo il codice scritto dall'utente al server per il calcolo della coverage
+    /*fetch(urlSend, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(code)
+    })*/
+  
+
+    /*var xhttp = new XMLHttpRequest();
+    setUrl("./sample.xml");
+   
 
     xhttp.onreadystatechange = function(){
         if (this.readyState==4 && this.status==200){
-            setUrl(xhttp.responseURL);
+            //setUrl(xhttp.responseURL);
+
+            /*const decs = [];
+
+            decs.push({
+              range: new monaco.Range(2, 1, 4, 1),
+              options: { inlineClassName: "line.covered" }
+            });
+            
+            decs.push({
+                range: new monaco.Range(10, 1, 11, 1),
+                options: { inlineClassName: "line.not.covered" }
+            });
+            
+            decs.push({
+              range: new monaco.Range(17, 1, 18, 1),
+              options: { inlineClassName: "line.not.covered" }
+            });
+
+            setDecorations(decs);/
+            //setCoverageDisplay(true);
+            parseJacocoCoverage(this);
+
             setCoverageDisplay(true);
         }
         else{
+          
         }
     } 
+
+    xhttp.open("GET","sample.xml",true);
+    xhttp.send();*/
+
+    fetch("https://raw.githubusercontent.com/vokal/jacoco-parse/master/test/assets/sample.xml")
+    .then(response => response.text())
+    .then(xmlString => {
+      var parser = new DOMParser();
+      var xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+      console.log(xmlDoc);
+      parseJacocoCoverage(xmlDoc);
+      setCoverageDisplay(true);
+      // Puoi accedere al documento XML tramite xmlDoc e lavorare con i suoi elementi e attributi
+    })
+    .catch(error => {
+      console.error('Si è verificato un errore durante il recupero del file XML:', error);
+    });
+
 
     setOutputDetails("Output...");
 
@@ -575,177 +674,111 @@ const Landing = () => {
     /******************************************************************************************************************************** */
 
 
-    /*var markers = [{
-      severity: monaco.MarkerSeverity.Warning,
-      message: "Some warning",
-      startLineNumber: 1,
-      startColumn: 1,
-      endLineNumber: 1,
-      endColumn: monaco.editor.getModel().getLineLength(1) + 1
-    }];
-    monaco.editor.setModelMarkers(monaco.editor.getModel(), "owner", markers);
-    markers[0].severity = monaco.MarkerSeverity.Error; // No effect */
     
-    /*var xhttp = new XMLHttpRequest();
-    let url = 'https://jsonplaceholder.typicode.com/posts';
-    //let url = "https://www.eclemma.org/jacoco/trunk/coverage/org.jacoco.examples/org.jacoco.examples/ClassInfo.java.html";
-    xhttp.open("GET",url);
-    xhttp.send();
-    xhttp.onreadystatechange = function(){
-      if (this.readyState==4 && this.status==200){
-        //var automobile = JSON.parse(xhttp.responseText);
-        //document.getElementById("dati-file").innerHTML = automobile.marca + ' ' +
-        //automobile.modello + ' ' + automobile.colore + ' ' + automobile.alimentazione; 
-        document.getElementById("Class-Window").innerHTML = this.response;
-      }
-      else{
-        document.getElementById("Class-Window").innerHTML = "niente";
-      }
-    
-    };*/
+    // Funzione per analizzare il file XML di copertura Jacoco
+    function parseJacocoCoverage(xml) {
+      var coverageData = [];
+      //console.log(xml);
+      //var xmlDoc = xml.responseXML;
+  
+      //console.log(xmlDoc);
+      // Esempio di iterazione su tutti gli elementi "<sourcefile>"
+      var classElements = xml.getElementsByTagName("sourcefile");
+      console.log(classElements);
+      for (var i = 0; i < classElements.length; i++) {
+          var classElement = classElements[i];
+          var className = classElement.getAttribute('name');
+  
+          // Esempio di estrazione della copertura delle linee di codice
+          //var lineCoverageElement = classElement.getElementsByTagName('line')[0];
+          //var lineCoverage = parseFloat(lineCoverageElement.getAttribute('coverage'));
+  
+          // Esempio di estrazione delle informazioni delle linee di codice
+          var lines = classElement.getElementsByTagName('line');
+          //var lineInfo = {};
+          var decs = [];
+          for (var j = 0; j < lines.length; j++) {
+              var line = lines[j];
+              var lineNumber = parseInt(line.getAttribute('nr'));
+              var instructionNotCovered = line.getAttribute('mi') != '0';
+              var branchNotCovered = line.getAttribute('mb') != '0';
 
-    /*************************************** */
-
-     /*   <!DOCTYPE html>
-    <html>
-    <head>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs/editor/editor.main.min.css" />
-        <style>
-            #editor {
-                height: 500px;
-            }
-        </style>
-    </head>
-    <body>
-        <div id="editor"></div>
-
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs/loader.min.js"></script>
-        <script>*/
-            //require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs' }});
-            //require(['vs/editor/editor.main'], function () {
-                // Crea l'istanza di Monaco Editor
-                
-                //var editor = monaco.editor.getModel(document.getElementById('Class-Window'));
-    /**/
-
-    //document.getElementById("Class-Window").innerHTML = editor.getValue();
-
-    // Carica il file XML di copertura Jacoco
-    /*var xhttp = new XMLHttpRequest();
-    //let url = 'https://jsonplaceholder.typicode.com/posts';
-    //let url = "https://www.eclemma.org/jacoco/trunk/coverage/org.jacoco.examples/org.jacoco.examples/ClassInfo.java.html";
-    let url = "./sample.xml";
-    xhttp.open("GET",url);
-    xhttp.send();
-
-    
-
-    xhttp.onreadystatechange = function(){
-      if (this.readyState==4 && this.status==200){
-        //document.getElementById("Class-Window").innerHTML = 'ok';
-        var xml = xhttp.responseXML;
-        var coverageData = parseJacocoCoverage(xml);
-        var coverageText = JSON.stringify(coverageData, null, 2);
-        //editor.setValue(coverageText);
-        //editor.setValue("modifica");
-      }
-      else{
-        //document.getElementById("Class-Window").innerHTML = xhttp.status + " " + xhttp.readyState;
-      }
-    }
-
-    /*var xmlhttp = new XMLHttpRequest();
-    xmlhttp.open('GET', 'https://jsonplaceholder.typicode.com/posts');
-    xmlhttp.send();
-    xmlhttp.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 200) {
-            var xml = xmlhttp.responseXML;
-            //var coverageData = parseJacocoCoverage(xml);
-            //var coverageText = JSON.stringify(coverageData, null, 2);
-            //editor.setValue(coverageText);
-        }
-        else{
-          document.getElementById("Class-Window").innerHTML="niente";
-        }
-    };*/
-              
-
-                /*/ Funzione per analizzare il file XML di copertura Jacoco
-                function parseJacocoCoverage(xml, editor) {
-                  var coverageData = [];
-              
-                  // Esempio di iterazione su tutti gli elementi "<class>"
-                  var classElements = xml.getElementsByTagName('class');
-                  for (var i = 0; i < classElements.length; i++) {
-                      var classElement = classElements[i];
-                      var className = classElement.getAttribute('name');
-              
-                      // Esempio di estrazione della copertura delle linee di codice
-                      var lineCoverageElement = classElement.getElementsByTagName('line')[0];
-                      var lineCoverage = parseFloat(lineCoverageElement.getAttribute('coverage'));
-              
-                      // Esempio di estrazione delle informazioni delle linee di codice
-                      var lines = classElement.getElementsByTagName('line');
-                      var lineInfo = {};
-                      for (var j = 0; j < lines.length; j++) {
-                          var line = lines[j];
-                          var lineNumber = parseInt(line.getAttribute('nr'));
-                          var lineCovered = line.getAttribute('ci') === '1';
-              
-                          lineInfo[lineNumber] = lineCovered;
-                      }
-              
-                      // Creazione di un oggetto con le informazioni di copertura
-                      var coverageInfo = {
-                          className: className,
-                          lineCoverage: lineCoverage,
-                          lines: lineInfo
-                      };
-              
-                      coverageData.push(coverageInfo);
-                  }
-              
-                  // Applica le informazioni di copertura all'editor Monaco
-                  applyCoverageToEditor(coverageData, editor);
-                  return coverageData;
+              const range = new Range(lineNumber, 1, lineNumber+1, 1);
+              if (instructionNotCovered){
+                decs.push({
+                  range: range,
+                  options: { inlineClassName: "instruction.not.covered" }
+                });
               }
-              
-              function applyCoverageToEditor(coverageData, editor) {
-                  var model = editor.getModel();
-                  var decorations = [];
-              
-                  for (var i = 0; i < coverageData.length; i++) {
-                      var coverageInfo = coverageData[i];
-                      var className = coverageInfo.className;
-                      var lines = coverageInfo.lines;
-              
-                      // Esempio di applicazione delle informazioni di copertura alle linee di codice nell'editor Monaco
-                      for (var lineNumber in lines) {
-                          if (lines.hasOwnProperty(lineNumber)) {
-                              var lineCovered = lines[lineNumber];
-              
-                              // Calcola l'intervallo della linea di codice nel modello
-                              var startColumn = 1;
-                              var endColumn = model.getLineMaxColumn(lineNumber);
-                              var range = new monaco.Range(lineNumber, startColumn, lineNumber, endColumn);
-              
-                              // Crea un'opzione decorazione per evidenziare la linea di codice coperta o non coperta
-                              var decoration = {
-                                  range: range,
-                                  options: {
-                                      isWholeLine: true,
-                                      className: lineCovered ? 'covered-line' : 'uncovered-line'
-                                  }
-                              };
-              
-                              decorations.push(decoration);
-                          }
-                      }
-                  }
-              
-                  // Applica le decorazioni all'editor Monaco
-                  editor.deltaDecorations([], decorations);
+              else if (branchNotCovered){
+                decs.push({
+                  range: range,
+                  options: { inlineClassName: "branch.not.covered" }
+                });
               }
+              else {
+                decs.push({
+                  range: range,
+                  options: { inlineClassName: "line.covered" }
+                });
+              }
+
+              //lineInfo[lineNumber] = lineNotCovered;
+          }
+
+          setDecorations(decs);
+  
+          // Creazione di un oggetto con le informazioni di copertura
+          /*var coverageInfo = {
+              className: className,
+              lineCoverage: lineCoverage,
+              lines: lineInfo
+          };
+  
+          coverageData.push(coverageInfo);*/
+      }
+  
+      // Applica le informazioni di copertura all'editor Monaco
+      //applyCoverageToEditor(coverageData, editor);
+      //return coverageData;
+  }
+  
+  function applyCoverageToEditor(coverageData, editor) {
+      var model = editor.getModel();
+      var decorations = [];
+  
+      for (var i = 0; i < coverageData.length; i++) {
+          var coverageInfo = coverageData[i];
+          var className = coverageInfo.className;
+          var lines = coverageInfo.lines;
+  
+          // Esempio di applicazione delle informazioni di copertura alle linee di codice nell'editor Monaco
+          for (var lineNumber in lines) {
+              if (lines.hasOwnProperty(lineNumber)) {
+                  var lineCovered = lines[lineNumber];
+  
+                  // Calcola l'intervallo della linea di codice nel modello
+                  var startColumn = 1;
+                  var endColumn = model.getLineMaxColumn(lineNumber);
+                  var range = new monaco.Range(lineNumber, startColumn, lineNumber, endColumn);
+  
+                  // Crea un'opzione decorazione per evidenziare la linea di codice coperta o non coperta
+                  var decoration = {
+                      range: range,
+                      options: {
+                          isWholeLine: true,
+                          className: lineCovered ? 'covered-line' : 'uncovered-line'
+                      }
+                  };
+  
+                  decorations.push(decoration);
+              }
+          }
+      }
+  
+      // Applica le decorazioni all'editor Monaco
+      editor.deltaDecorations([], decorations);
+  }
             //});
                 
             //});
@@ -756,49 +789,7 @@ const Landing = () => {
     /******************************************* */
 
 
-    //setProcessing(false);
-    /*const formData = {
-      language_id: language.id,
-      // encode source code in base64
-      source_code: btoa(code),
-      stdin: btoa(customInput),
-    };
-    const options = {
-      method: "POST",
-      url: process.env.REACT_APP_RAPID_API_URL,
-      params: { base64_encoded: "true", fields: "*" },
-      headers: {
-        "content-type": "application/json",
-        "Content-Type": "application/json",
-        "X-RapidAPI-Host": process.env.REACT_APP_RAPID_API_HOST,
-        "X-RapidAPI-Key": process.env.REACT_APP_RAPID_API_KEY,
-      },
-      data: formData,
-    };
-
-    axios
-      .request(options)
-      .then(function (response) {
-        console.log("res.data", response.data);
-        const token = response.data.token;
-        checkStatus(token);
-      })
-      .catch((err) => {
-        let error = err.response ? err.response.data : err;
-        // get error status
-        let status = err.response.status;
-        console.log("status", status);
-        if (status === 429) {
-          console.log("too many requests", status);
-
-          showErrorToast(
-            `Quota of 100 requests exceeded for the Day! Please read the blog on freeCodeCamp to learn how to setup your own RAPID API Judge0!`,
-            10000
-          );
-        }
-        setProcessing(false);
-        console.log("catch block...", error);
-      });*/
+    
   };
 
   const checkStatus = async (token) => {
@@ -954,10 +945,9 @@ const Landing = () => {
           </div>
           <div id = "prova" className = "overlay rounded-md overflow-hidden w-full h-full shadow-4xl">
           </div>
-          <OutputWindow outputDetails={outputDetails} />
+          <OutputWindow coverageDisplay={coverageDisplay} url={urlOutput} />
           <div className="flex flex-col items-end">
           </div>
-          {outputDetails && <OutputDetails outputDetails={outputDetails} />}
         </div>
       </div>
     </>
