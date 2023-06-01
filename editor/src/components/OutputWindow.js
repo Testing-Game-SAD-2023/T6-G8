@@ -47,7 +47,7 @@ const OutputWindow = ({ outputDetails }) => {
   ); //*/
 
   // ritorna l'output corrispondente alla stringa di testo passata in ingresso
-  return (
+  /*return (
     <>
       <h1 className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 mb-2">
         Output
@@ -58,7 +58,7 @@ const OutputWindow = ({ outputDetails }) => {
         </pre>
       </div>
     </>
-  );
+  );*/
 };
 
 export default OutputWindow;

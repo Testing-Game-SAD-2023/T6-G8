@@ -23,345 +23,14 @@ import { waitFor } from "@testing-library/react";
 import Editor from '@monaco-editor/react';
 import '../index.css'
 import { Range } from 'monaco-editor';
+import parse from 'html-react-parser';
 
-const ExampleClass = `
-import java.util.ArrayList;
-import java.util.List;
+const urlCoverageServer = "http://localhost:3001/";
+const urlClassServer = "http://localhost:3002/";
+const urlTestsServer = "http://localhost:3003/";
+const fileNameDefault = "test.java";
 
-public class ByteArrayHashMap<T>
-{
-    /**
-     * The default initial capacity - MUST be a power of two.
-     */
-    static final int DEFAULT_INITIAL_CAPACITY = 16;
-
-    /**
-     * The maximum capacity, used if a higher value is implicitly specified
-     * by either of the constructors with arguments.
-     * MUST be a power of two <= 1<<30.
-     */
-    static final int MAXIMUM_CAPACITY = 1 << 30;
-
-  
-    static final float DEFAULT_LOAD_FACTOR = 0.75f;
-
- 
-    protected Entry<T>[] table;
-    protected int size;
-    private int threshold;
-    final float loadFactor;
-
-  
-    @SuppressWarnings("unchecked")
-	public ByteArrayHashMap(int initialCapacity, float loadFactor) {
-        if (initialCapacity < 0)
-            throw new IllegalArgumentException("Illegal initial capacity: " +
-                                               initialCapacity);
-        if (initialCapacity > MAXIMUM_CAPACITY)
-            initialCapacity = MAXIMUM_CAPACITY;
-        if (loadFactor <= 0 || Float.isNaN(loadFactor))
-            throw new IllegalArgumentException("Illegal load factor: " +
-                                               loadFactor);
-
-        // Find a power of 2 >= initialCapacity
-        int capacity = 1;
-        while (capacity < initialCapacity) 
-            capacity <<= 1;
-    
-        this.loadFactor = loadFactor;
-        threshold = (int)(capacity * loadFactor);
-        table = new Entry[capacity];
-    }
-  
-  
-    public ByteArrayHashMap(int initialCapacity) {
-        this(initialCapacity, DEFAULT_LOAD_FACTOR);
-    }
-
-    @SuppressWarnings("unchecked")
-    public ByteArrayHashMap() {
-        this.loadFactor = DEFAULT_LOAD_FACTOR;
-        threshold = (int)(DEFAULT_INITIAL_CAPACITY * DEFAULT_LOAD_FACTOR);
-        table = new Entry[DEFAULT_INITIAL_CAPACITY];
-    }
-
-
- 
-    public int size() {
-        return size;
-    }
-  
-  
-    public boolean isEmpty() {
-        return size == 0;
-    }
-
-    public T get(byte[] key, int offset, int len )
-    {
-    	byte[]	k = new byte[len];
-    	System.arraycopy( key, offset, k, 0, len );
-    	return( get( k ));
-    }
-    
-    public T get(byte[] key) {
-        
-        int hash = hash(key);
-        int i = indexFor(hash, table.length);
-        Entry<T> e = table[i]; 
-        while (true) {
-            if (e == null)
-                return null;
-            if (e.hash == hash && eq(key, e.key)) 
-                return e.value;
-            e = e.next;
-        }
-    }
- 
-    public boolean
-    containsKey(
-    	byte[]	key )
-    {
-        int hash = hash(key);
-        int i = indexFor(hash, table.length);
-        Entry<T> e = table[i]; 
-        while (true) {
-            if (e == null)
-                return( false );
-            if (e.hash == hash && eq(key, e.key)) 
-                return( true );
-            e = e.next;
-        }
-    }
-    
-    public T put(byte[] key, T value) {
-        int hash = hash(key);
-        int i = indexFor(hash, table.length);
-
-        for (Entry<T> e = table[i]; e != null; e = e.next) {
-            if (e.hash == hash && eq(key, e.key)) {
-                T oldValue = e.value;
-                e.value = value;
-              
-                return oldValue;
-            }
-        }
-
-        addEntry(hash, key, value, i);
-        return null;
-    }
-
- 
-    public T remove(byte[] key) {
-        Entry<T> e = removeEntryForKey(key);
-        return (e == null ? null : e.value);
-    }
-
-
-    public void clear() {
-      
-        Entry<T> tab[] = table;
-        for (int i = 0; i < tab.length; i++) 
-            tab[i] = null;
-        size = 0;
-    }
-    
-    public List<byte[]> keys() {
-    	List<byte[]>	res = new ArrayList<byte[]>();
-    	
-        for (int j = 0; j < table.length; j++) {
-	         Entry<T> e = table[j];
-	         while( e != null ){
-               	res.add( e.key );
-                	
-                 e = e.next;
-	        }
-	    }
-        
-        return( res );
-    }
-    
-    public List<T> values() {
-    	List<T>	res = new ArrayList<T>();
-    	
-        for (int j = 0; j < table.length; j++) {
-	         Entry<T> e = table[j];
-	         while( e != null ){
-               	res.add( e.value );
-                	
-                e = e.next;
-	        }
-	    }
-        
-        return( res );
-    }
-
-    /**
-     * Bit inefficient at the moment
-     * @return
-     */    
-    public ByteArrayHashMap<T> duplicate() {
-    	ByteArrayHashMap<T>	res = new ByteArrayHashMap<T>(size,loadFactor);
-    	
-        for (int j = 0; j < table.length; j++) {
-	         Entry<T> e = table[j];
-	         while( e != null ){
-              	res.put( e.key, e.value );
-               	
-               e = e.next;
-	        }
-	    }
-       
-       return( res );
-    }
-    
-    
-    @SuppressWarnings("unchecked")
-    void resize(int newCapacity) {
-        Entry<T>[] oldTable = table;
-        int oldCapacity = oldTable.length;
-        if (oldCapacity == MAXIMUM_CAPACITY) {
-            threshold = Integer.MAX_VALUE;
-            return;
-        }
-
-        Entry<T>[] newTable = new Entry[newCapacity];
-        transfer(newTable);
-        table = newTable;
-        threshold = (int)(newCapacity * loadFactor);
-    }
-
-  
-    void transfer(Entry<T>[] newTable) {
-        Entry<T>[] src = table;
-        int newCapacity = newTable.length;
-        for (int j = 0; j < src.length; j++) {
-            Entry<T> e = src[j];
-            if (e != null) {
-                src[j] = null;
-                do {
-                    Entry<T> next = e.next;
-                    int i = indexFor(e.hash, newCapacity);  
-                    e.next = newTable[i];
-                    newTable[i] = e;
-                    e = next;
-                } while (e != null);
-            }
-        }
-    }
-
- 
-    Entry<T> removeEntryForKey(byte[] key) {
-        int hash = hash(key);
-        int i = indexFor(hash, table.length);
-        Entry<T> prev = table[i];
-        Entry<T> e = prev;
-
-        while (e != null) {
-            Entry<T> next = e.next;
-            if (e.hash == hash && eq(key, e.key)) {
-               
-                size--;
-                if (prev == e) 
-                    table[i] = next;
-                else
-                    prev.next = next;
-       
-                return e;
-            }
-            prev = e;
-            e = next;
-        }
-   
-        return e;
-    }
-
- 
-
-    protected static class Entry<S>{
-    	public final byte[] key;
-        public S value;
-        public final int hash;
-        public Entry<S> next;
-
-        /**
-         * Create new entry.
-         */
-        Entry(int h, byte[] k, S v, Entry<S> n) { 
-            value = v; 
-            next = n;
-            key = k;
-            hash = h;
-        }
-
-        public byte[] getKey() {
-            return key;
-        }
-
-        public S getValue() {
-            return value;
-        }
-
-    }
-
- 
-    void addEntry(int hash, byte[] key, T value, int bucketIndex) {
-        table[bucketIndex] = new Entry<T>(hash, key, value, table[bucketIndex]);
-        if (size++ >= threshold) 
-            resize(2 * table.length);
-    }
-
- 
-    void createEntry(int hash, byte[] key, T value, int bucketIndex) {
-        table[bucketIndex] = new Entry<T>(hash, key, value, table[bucketIndex]);
-        size++;
-    }
-    
-    private static final int hash(byte[] x) {	
-    	int	hash = 0;
-    	
-    	int	len = x.length;
-    	
-        for (int i = 0; i < len; i++){
-      
-        	hash = 31*hash + x[i];
-        }
-        
-        return( hash );
-    }
-
-  
-    private static final boolean eq(byte[] x, byte[] y) 
-    {
-        if ( x == y ){
-        	return( true );
-        }
-        
-        int	len = x.length;
-        
-        if ( len != y.length ){
-        	return( false );
-        }
-        
-        for (int i=0;i<len;i++){
-        	if ( x[i] != y[i] ){
-        		return( false );
-        	}
-        }
-        
-        return( true );
-    }
-
-  
-    private static final int indexFor(int h, int length) 
-    {
-        return h & (length-1);
-    }
- 
-  
-}`;
-
-
-const javascriptDefault = `
+const template = `
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
@@ -393,11 +62,7 @@ public class AppTest{
 }
 `;
 
-const urlDefault = "https://www.eclemma.org/jacoco/trunk/coverage/org.jacoco.examples/org.jacoco.examples/ClassInfo.java.html";
-const urlOutput = "https://www.eclemma.org/jacoco/trunk/coverage/org.jacoco.examples/org.jacoco.examples/index.source.html";
-const urlSend = "0.0.0.0"; // server a cui inviare il test scritto dall'utente per il calcolo della coverage
-
-const ClassEditor = ({code, language, theme}) => {
+const ClassEditor = ({code, language, theme, editorDidMount}) => {
     return (
     <div id="Class-Window" className="overlay rounded-md overflow-hidden w-full h-full shadow-4xl">
       <Editor 
@@ -409,6 +74,7 @@ const ClassEditor = ({code, language, theme}) => {
           theme={theme}
           defaultValue="// some comment"
           options={{readOnly: true}} // rendiamo la classe da testare non modificabile
+          onMount={editorDidMount}
       />
     </div>
     );
@@ -450,9 +116,9 @@ const CoverageWindow = ({code, url}) => {
       ); //*/
 };
 
-const ClassWindow = ({coverageDisplay, code, language, url, theme, editorDidMount}) => {
+const ClassWindow = ({coverageDisplay, code, language, url, theme, editorDidMount, editorDidMountE}) => {
     if (!coverageDisplay) {
-        return <ClassEditor theme={theme} code={code} language={language} />;
+        return <ClassEditor theme={theme} code={code} language={language} editorDidMount={editorDidMountE}/>;
     }
     /*/ restituiamo la coverage come pagina html
     else
@@ -479,22 +145,34 @@ const OutputNull = ({}) => {
   ); 
 }
 
-const OutputCoverage = ({url}) => {
-  return (
+const OutputCoverage = ({parsedXml}) => {
+  /*class MyComponent extends React.Component {  render() {    
+    // HTML da parsare    
+    //const html = '<div><h1>Title</h1><p>Paragraph</p></div>';    
+    // Effettua il parsing dell'HTML in componenti React    
+    const parsedHTML = parse(html);    
+    return <div>{parsedHTML}</div>;  }}*/
+    return (
+      <>
+      <h1 className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 mb-2">
+          Output
+      </h1>
+      <pre>{parsedXml}</pre>
+      </>
+    );
+  /*return (
     <>
       <h1 className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 mb-2">
           Output
       </h1>
-      <div className="overlay rounded-md overflow-hidden w-full h-full shadow-4xl"> 
-        <iframe src={url} height={380} width={570}> 
-        </iframe>
-      </div>
+      <div className="w-full h-56 bg-[#1e293b] rounded-md text-white font-normal text-sm overflow-y-auto"
+      dangerouslySetInnerHTML={{ __html: html }}></div>
     </>
-    );
+    );//*/
 }
 
 
-const OutputWindow = ({coverageDisplay, url}) => {
+const OutputWindow = ({coverageDisplay, parsedXml}) => {
   if (!coverageDisplay) {
       return <OutputNull  />;
   }
@@ -506,14 +184,14 @@ const OutputWindow = ({coverageDisplay, url}) => {
   // restituiamo la coverage all'interno dell'editor
   else
   {
-      return <OutputCoverage url={url}/>;
+      return <OutputCoverage html={parsedXml}/>;
   } //*/
 };
 
 
 const Landing = () => {
-  const [code, setCode] = useState(javascriptDefault);
-  const [classCode, setClassCode] = useState(ExampleClass);
+  const [code, setCode] = useState(template);
+  const [classCode, setClassCode] = useState('');
   const [customInput, setCustomInput] = useState("");
   const [outputDetails, setOutputDetails] = useState(null);
   const [classTest, setClassTest] = useState(null);
@@ -523,7 +201,7 @@ const Landing = () => {
   const [theme, setTheme] = useState("cobalt");
   const [language, setLanguage] = useState(languageOptions[0]);
   const [coverageDisplay, setCoverageDisplay] = useState(false);
-  const [url, setUrl] = useState(urlDefault);
+  const [url, setUrl] = useState('');
 
   const enterPress = useKeyPress("Enter");
   const ctrlPress = useKeyPress("Control");
@@ -532,37 +210,52 @@ const Landing = () => {
   const [decorations, setDecorations] = useState([]);
   const { monacoEditor, monaco } = vars;
 
+  const [varsE, setVarsE] = useState({});
+  const { monacoEditorE, monacoE } = varsE;
+
+  const [htmlContent, setHtmlContent] = useState('');
+  const [parsedXml, setParsedXml] = useState('');
+
   async function handleEditorDidMount(monacoEditor, monaco) {
     setVars({ monacoEditor, monaco });
   }
 
-  useEffect(() => {
-  if (!monacoEditor || !monaco) {
-      return;
+  async function handleEditorDidMountE(monacoEditorE, monacoE) {
+    setVarsE({ monacoEditorE, monacoE }); 
   }
 
-  const ids = monacoEditor.deltaDecorations([],decorations);
+  useEffect(() => {
+    if (!monacoEditorE || !monacoE) {
+        return;
+    }
 
-  /*const ids = monacoEditor.deltaDecorations(
-      [],
-      [
-      {
-          range: new monaco.Range(2, 1, 4, 1),
-          options: { inlineClassName: "line.covered" }
-      },
-      {
-          range: new monaco.Range(10, 1, 11, 1),
-          options: { inlineClassName: "line.not.covered" }
-      },
-      {
-        range: new monaco.Range(17, 1, 18, 1),
-        options: { inlineClassName: "line.not.covered" }
-      }
-      ]
-  );*/
-  //setIds(ids);
-  return () => monacoEditor.deltaDecorations(ids, []);
-  }, [monacoEditor, monaco]);  
+    fetch(urlClassServer)
+    .then(response => {
+    if (response.ok) {
+        return response.text();
+    } else {
+        throw new Error('Errore nella richiesta GET al server.');
+    }
+    })
+    .then(data => {
+    console.log('classe caricata correttamente');
+    setClassCode(data);
+    })
+    .catch(error => {
+    console.error('Errore:', error);
+    });
+
+  }, [monacoEditorE, monacoE]);
+
+  useEffect(() => {
+    if (!monacoEditor || !monaco) {
+        return;
+    } 
+
+    const ids = monacoEditor.deltaDecorations([],decorations);
+
+    return () => monacoEditor.deltaDecorations(ids, []);
+  }, [monacoEditor, monaco]);
 
   const onSelectChange = (sl) => {
     console.log("selected Option...", sl);
@@ -576,221 +269,171 @@ const Landing = () => {
       handleCompile();
     }
   }, [ctrlPress, enterPress]);
+
   const onChange = (action, data) => {
-    switch (action) {
-      case "code": {
-        setCode(data);
-        break;
-      }
-      default: {
-        console.warn("case not handled!", action, data);
-      }
-    }
+    setCode(data);
+    console.log(code);
+    console.log("action = ", action)
+    console.log("data = ", data)
   };
+
   const handleSave = () => {
     setProcessingSave(true);
-    setTimeout(function(){setProcessingSave(false);},5000); //to do: implementare funzione save
+    const fileName = window.prompt('Inserisci il nome del file', fileNameDefault);
+    if (fileName){
+        // Invia il codice al server
+        const msg={
+            name:fileName,
+            code:code
+        }
+    
+        fetch(urlTestsServer, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                },
+            body: JSON.stringify(msg),
+        }).then(response => {
+            console.log(response);
+            if (response.ok) {
+                console.log('File inviato correttamente al server.');
+                window.alert('File salvato con successo in remoto');
+                //setIsModalOpen(true);
+            } else {
+                console.error('Errore durante l\'invio del file al server.');
+                window.alert('Errore durante il salvataggio del test');
+            }
+        })
+        .catch(error => {
+            console.error('Errore durante l\'invio della richiesta al server:', error);
+            window.alert('Errore durante il salvataggio del test');
+        });
+    }
+    setProcessingSave(false);
   };
   const handleSaveAs = () => {
     setProcessingSaveAs(true);
-    setTimeout(function(){setProcessingSaveAs(false);},5000); //to do: implementare funzione create
+    const fileName = window.prompt('Inserisci il nome del file', 'test.java');
+    if (fileName) {
+        const blob = new Blob([code], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.click();
+
+        // Rilascia l'URL creato dopo il download
+        URL.revokeObjectURL(url);
+
+    }
+    setProcessingSaveAs(false);
   };
+
   const handleCompile = () => {
     setProcessing(true);
+    
+    // Invia il codice al server
+    const msg={
+        name:fileNameDefault,
+        code:code
+    }
 
-    //setCoverageDisplay(true);
+    fetch(urlCoverageServer, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            },
+        body: JSON.stringify(msg),
+    }).then(response => response.json())
+    .then(data => {
+      setHtmlContent(data.html);
+      //var iframe = document.getElementById('output');
+      //document.open();
+      //document.write(data.html);
+      //var iframedoc = iframe.contentDocument || iframe.contentWindow.document;
+      //iframedoc.body.innerHTML = data.html;
 
-    // Inviamo il codice scritto dall'utente al server per il calcolo della coverage
-    /*fetch(urlSend, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(code)
-    })*/
-  
+      /*const div = document.createElement('div');        
+      div.innerHTML = data.html;        
+      // Estrai il testo        
+      const text = div.textContent;        
+      // Visualizza il testo nell'elemento di output        
+      const outputElement = document.getElementById('output');        
+      outputElement.textContent = text;*/
 
-    /*var xhttp = new XMLHttpRequest();
-    setUrl("./sample.xml");
-   
-
-    xhttp.onreadystatechange = function(){
-        if (this.readyState==4 && this.status==200){
-            //setUrl(xhttp.responseURL);
-
-            /*const decs = [];
-
-            decs.push({
-              range: new monaco.Range(2, 1, 4, 1),
-              options: { inlineClassName: "line.covered" }
-            });
-            
-            decs.push({
-                range: new monaco.Range(10, 1, 11, 1),
-                options: { inlineClassName: "line.not.covered" }
-            });
-            
-            decs.push({
-              range: new monaco.Range(17, 1, 18, 1),
-              options: { inlineClassName: "line.not.covered" }
-            });
-
-            setDecorations(decs);/
-            //setCoverageDisplay(true);
-            parseJacocoCoverage(this);
-
-            setCoverageDisplay(true);
-        }
-        else{
-          
-        }
-    } 
-
-    xhttp.open("GET","sample.xml",true);
-    xhttp.send();*/
-
-    fetch("https://raw.githubusercontent.com/vokal/jacoco-parse/master/test/assets/sample.xml")
-    .then(response => response.text())
-    .then(xmlString => {
+     
       var parser = new DOMParser();
-      var xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+      var xmlDoc = parser.parseFromString(data.xml, 'text/xml');
       console.log(xmlDoc);
       parseJacocoCoverage(xmlDoc);
       setCoverageDisplay(true);
       // Puoi accedere al documento XML tramite xmlDoc e lavorare con i suoi elementi e attributi
     })
     .catch(error => {
-      console.error('Si è verificato un errore durante il recupero del file XML:', error);
+        console.error('Errore durante l\'invio della richiesta al server:', error);
     });
 
+    //var doc = document.getElementById('output');
+    //console.log(doc);
+    //doc.textContent=htmlContent;
+    //doc.open();
+    //doc.write(htmlContent);
+    //doc.close();
 
-    setOutputDetails("Output...");
+setProcessing(false);
 
-    setProcessing(false);
+// Funzione per analizzare il file XML di copertura Jacoco
+function parseJacocoCoverage(xml) {
+  var coverageData = [];
 
+  // Esempio di iterazione su tutti gli elementi "<sourcefile>"
+  var classElements = xml.getElementsByTagName("sourcefile");
+  console.log(classElements);
+  for (var i = 0; i < classElements.length; i++) {
+      var classElement = classElements[i];
+      var className = classElement.getAttribute('name');
 
-    /******************************************************************************************************************************** */
-    /******************************************************************************************************************************** */
-    /******************************************************************************************************************************** */
+      // Esempio di estrazione delle informazioni delle linee di codice
+      var lines = classElement.getElementsByTagName('line');
+      //var lineInfo = {};
+      var decs = [];
+      for (var j = 0; j < lines.length; j++) {
+          var line = lines[j];
+          var lineNumber = parseInt(line.getAttribute('nr'));
+          var instructionNotCovered = line.getAttribute('mi') != '0';
+          var branchNotCovered = line.getAttribute('mb') != '0';
 
-
-    
-    // Funzione per analizzare il file XML di copertura Jacoco
-    function parseJacocoCoverage(xml) {
-      var coverageData = [];
-      //console.log(xml);
-      //var xmlDoc = xml.responseXML;
-  
-      //console.log(xmlDoc);
-      // Esempio di iterazione su tutti gli elementi "<sourcefile>"
-      var classElements = xml.getElementsByTagName("sourcefile");
-      console.log(classElements);
-      for (var i = 0; i < classElements.length; i++) {
-          var classElement = classElements[i];
-          var className = classElement.getAttribute('name');
-  
-          // Esempio di estrazione della copertura delle linee di codice
-          //var lineCoverageElement = classElement.getElementsByTagName('line')[0];
-          //var lineCoverage = parseFloat(lineCoverageElement.getAttribute('coverage'));
-  
-          // Esempio di estrazione delle informazioni delle linee di codice
-          var lines = classElement.getElementsByTagName('line');
-          //var lineInfo = {};
-          var decs = [];
-          for (var j = 0; j < lines.length; j++) {
-              var line = lines[j];
-              var lineNumber = parseInt(line.getAttribute('nr'));
-              var instructionNotCovered = line.getAttribute('mi') != '0';
-              var branchNotCovered = line.getAttribute('mb') != '0';
-
-              const range = new Range(lineNumber, 1, lineNumber+1, 1);
-              if (instructionNotCovered){
-                decs.push({
-                  range: range,
-                  options: { inlineClassName: "instruction.not.covered" }
-                });
-              }
-              else if (branchNotCovered){
-                decs.push({
-                  range: range,
-                  options: { inlineClassName: "branch.not.covered" }
-                });
-              }
-              else {
-                decs.push({
-                  range: range,
-                  options: { inlineClassName: "line.covered" }
-                });
-              }
-
-              //lineInfo[lineNumber] = lineNotCovered;
+          const range = new Range(lineNumber, 1, lineNumber+1, 1);
+          if (instructionNotCovered){
+            decs.push({
+              range: range,
+              options: { inlineClassName: "instruction.not.covered" }
+            });
+          }
+          else if (branchNotCovered){
+            decs.push({
+              range: range,
+              options: { inlineClassName: "branch.not.covered" }
+            });
+          }
+          else {
+            decs.push({
+              range: range,
+              options: { inlineClassName: "line.covered" }
+            });
           }
 
-          setDecorations(decs);
-  
-          // Creazione di un oggetto con le informazioni di copertura
-          /*var coverageInfo = {
-              className: className,
-              lineCoverage: lineCoverage,
-              lines: lineInfo
-          };
-  
-          coverageData.push(coverageInfo);*/
-      }
-  
-      // Applica le informazioni di copertura all'editor Monaco
-      //applyCoverageToEditor(coverageData, editor);
-      //return coverageData;
-  }
-  
-  function applyCoverageToEditor(coverageData, editor) {
-      var model = editor.getModel();
-      var decorations = [];
-  
-      for (var i = 0; i < coverageData.length; i++) {
-          var coverageInfo = coverageData[i];
-          var className = coverageInfo.className;
-          var lines = coverageInfo.lines;
-  
-          // Esempio di applicazione delle informazioni di copertura alle linee di codice nell'editor Monaco
-          for (var lineNumber in lines) {
-              if (lines.hasOwnProperty(lineNumber)) {
-                  var lineCovered = lines[lineNumber];
-  
-                  // Calcola l'intervallo della linea di codice nel modello
-                  var startColumn = 1;
-                  var endColumn = model.getLineMaxColumn(lineNumber);
-                  var range = new monaco.Range(lineNumber, startColumn, lineNumber, endColumn);
-  
-                  // Crea un'opzione decorazione per evidenziare la linea di codice coperta o non coperta
-                  var decoration = {
-                      range: range,
-                      options: {
-                          isWholeLine: true,
-                          className: lineCovered ? 'covered-line' : 'uncovered-line'
-                      }
-                  };
-  
-                  decorations.push(decoration);
-              }
-          }
-      }
-  
-      // Applica le decorazioni all'editor Monaco
-      editor.deltaDecorations([], decorations);
-  }
-            //});
-                
-            //});
-    //    </script>
-    //</body>
-    //</html>
+        }
 
-    /******************************************* */
+        setDecorations(decs);
 
-
-    
+    }
   };
+
+  // Funzione per ottenere l'output dal file XML di copertura Jacoco
+};
+
+    
 
   const checkStatus = async (token) => {
     const options = {
@@ -903,7 +546,7 @@ const Landing = () => {
             !code ? "opacity-100" : ""
           )}
         >
-          {processing_saveAs? "Saving as..." : "Save as"}
+          {processing_saveAs? "Downloading..." : "Download Test"}
         </button>
         <div className="flex flex-row space-x-4 items-start px-0 py-4">
           <ThemeDropdown handleThemeChange={handleThemeChange} theme={theme} />
@@ -941,11 +584,12 @@ const Landing = () => {
               theme={theme.value}
               url={url}
               editorDidMount={handleEditorDidMount}
+              editorDidMountE={handleEditorDidMountE}
             />
           </div>
           <div id = "prova" className = "overlay rounded-md overflow-hidden w-full h-full shadow-4xl">
           </div>
-          <OutputWindow coverageDisplay={coverageDisplay} url={urlOutput} />
+          <OutputWindow coverageDisplay={coverageDisplay} html={parsedXml} />
           <div className="flex flex-col items-end">
           </div>
         </div>
