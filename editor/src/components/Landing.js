@@ -145,7 +145,7 @@ const OutputNull = ({}) => {
   ); 
 }
 
-const OutputCoverage = ({parsedXml}) => {
+const OutputCoverage = ({html}) => {
   /*class MyComponent extends React.Component {  render() {    
     // HTML da parsare    
     //const html = '<div><h1>Title</h1><p>Paragraph</p></div>';    
@@ -157,7 +157,9 @@ const OutputCoverage = ({parsedXml}) => {
       <h1 className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 mb-2">
           Output
       </h1>
-      <pre>{parsedXml}</pre>
+      <pre className="w-full h-56 bg-[#1e293b] rounded-md text-white font-normal text-sm overflow-y-auto">
+        Il test ha coperto 2 righe di codice.
+      </pre>
       </>
     );
   /*return (
@@ -589,7 +591,7 @@ function parseJacocoCoverage(xml) {
           </div>
           <div id = "prova" className = "overlay rounded-md overflow-hidden w-full h-full shadow-4xl">
           </div>
-          <OutputWindow coverageDisplay={coverageDisplay} html={parsedXml} />
+          <OutputWindow coverageDisplay={coverageDisplay} html={htmlContent} />
           <div className="flex flex-col items-end">
           </div>
         </div>
