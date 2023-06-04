@@ -1,35 +1,39 @@
 import React, { useEffect, useState } from "react";
-import CodeEditorWindow from "./CodeEditorWindow";
-import axios from "axios";
 import { classnames } from "../utils/general";
 import { languageOptions } from "../constants/languageOptions";
-
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
 import { defineTheme } from "../lib/defineTheme";
 import useKeyPress from "../hooks/useKeyPress";
-import Footer from "./Footer";
-//import OutputWindow from "./OutputWindow";
-import CustomInput from "./CustomInput";
-import OutputDetails from "./OutputDetails";
-import ClassTest from "./ClassTest";
-//import ClassWindow from "./ClassWindow";
-import ThemeDropdown from "./ThemeDropdown";
-import LanguagesDropdown from "./LanguagesDropdown";
-import App from "../App";
-import { waitFor } from "@testing-library/react";
-
-import Editor from '@monaco-editor/react';
 import '../index.css'
 import { Range } from 'monaco-editor';
-import parse from 'html-react-parser';
 
+// Import dei componenti richiamati all'interno del Landing
+import CodeEditorWindow from "./CodeEditorWindow";
+import ClassWindow from "./ClassWindow";
+import OutputWindow from "./OutputWindow";
+import ThemeDropdown from "./ThemeDropdown";
+
+//import axios from "axios";
+//import Footer from "./Footer";
+//import OutputWindow from "./OutputWindow";
+//import CustomInput from "./CustomInput";
+//import OutputDetails from "./OutputDetails";
+//mport ClassTest from "./ClassTest";
+//import ClassWindow from "./ClassWindow";
+//import LanguagesDropdown from "./LanguagesDropdown";
+//import App from "../App";
+//import { waitFor } from "@testing-library/react";
+//import Editor from '@monaco-editor/react';
+//import parse from 'html-react-parser';
+
+// Definizione di alcune costanti utili
 const urlCoverageServer = "http://localhost:3001/";
 const urlClassServer = "http://localhost:3002/";
 const urlTestsServer = "http://localhost:3003/";
 const fileNameDefault = "test.java";
 
+// Definizione del template da mostrare all'avvio dell'editor
 const template = `
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
@@ -61,135 +65,6 @@ public class AppTest{
   }
 }
 `;
-
-const ClassEditor = ({code, language, theme, editorDidMount}) => {
-    return (
-    <div id="Class-Window" className="overlay rounded-md overflow-hidden w-full h-full shadow-4xl">
-      <Editor 
-          height="50vh"
-          width={`100%`}
-          language={language}
-          value={code}
-          //path={value}
-          theme={theme}
-          defaultValue="// some comment"
-          options={{readOnly: true}} // rendiamo la classe da testare non modificabile
-          onMount={editorDidMount}
-      />
-    </div>
-    );
-};
-
-const ClassEditorCoverage = ({code, language, theme, editorDidMount}) => {
-  return (
-  <div id="Class-Window" className="overlay rounded-md overflow-hidden w-full h-full shadow-4xl">
-    <Editor 
-        height="50vh"
-        width={`100%`}
-        language={language}
-        value={code}
-        //path={value}
-        theme={theme}
-        defaultValue="// some comment"
-        options={{readOnly: true}} // rendiamo la classe da testare non modificabile
-        onMount={editorDidMount} // applichiamo le decorations
-    />
-  </div>
-  );
-};
-
-const CoverageWindow = ({code, url}) => {
-    /*/ restituisce la coverage da request html
-    return (
-    <div id="Coverage-Window" className="overlay rounded-md overflow-hidden w-full h-full shadow-4xl"> 
-      <iframe srcdoc={code} height={380} width={570}> 
-      </iframe>
-    </div>
-    ); //*/
-
-    // restituisce la coverage da url
-    return (
-      <div id="Coverage-Window" className="overlay rounded-md overflow-hidden w-full h-full shadow-4xl"> 
-        <iframe src={url} height={380} width={570}> 
-        </iframe>
-      </div>
-      ); //*/
-};
-
-const ClassWindow = ({coverageDisplay, code, language, url, theme, editorDidMount, editorDidMountE}) => {
-    if (!coverageDisplay) {
-        return <ClassEditor theme={theme} code={code} language={language} editorDidMount={editorDidMountE}/>;
-    }
-    /*/ restituiamo la coverage come pagina html
-    else
-    {
-        return <CoverageWindow url={url} code={code}/>;
-    } //*/
-    // restituiamo la coverage all'interno dell'editor
-    else
-    {
-        return <ClassEditorCoverage theme={theme} code={code} language={language} editorDidMount={editorDidMount}/>;
-    } //*/
-};
-
-const OutputNull = ({}) => {
-  return (
-    <>
-      <h1 className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 mb-2">
-        Output
-      </h1>
-      <div className="w-full h-56 bg-[#1e293b] rounded-md text-white font-normal text-sm overflow-y-auto">
-        
-      </div>
-    </>
-  ); 
-}
-
-const OutputCoverage = ({html}) => {
-  /*class MyComponent extends React.Component {  render() {    
-    // HTML da parsare    
-    //const html = '<div><h1>Title</h1><p>Paragraph</p></div>';    
-    // Effettua il parsing dell'HTML in componenti React    
-    const parsedHTML = parse(html);    
-    return <div>{parsedHTML}</div>;  }}*/
-    return (
-      <>
-      <h1 className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 mb-2">
-          Output
-      </h1>
-      <pre className="w-full h-56 bg-[#1e293b] rounded-md text-white font-normal text-sm overflow-y-auto">
-        Il test ha coperto 2 righe di codice.
-      </pre>
-      </>
-    );
-  /*return (
-    <>
-      <h1 className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 mb-2">
-          Output
-      </h1>
-      <div className="w-full h-56 bg-[#1e293b] rounded-md text-white font-normal text-sm overflow-y-auto"
-      dangerouslySetInnerHTML={{ __html: html }}></div>
-    </>
-    );//*/
-}
-
-
-const OutputWindow = ({coverageDisplay, parsedXml}) => {
-  if (!coverageDisplay) {
-      return <OutputNull  />;
-  }
-  /*/ restituiamo la coverage come pagina html
-  else
-  {
-      return <CoverageWindow url={url} code={code}/>;
-  } //*/
-  // restituiamo la coverage all'interno dell'editor
-  else
-  {
-      return <OutputCoverage html={parsedXml}/>;
-  } //*/
-};
-
 
 const Landing = () => {
   const [code, setCode] = useState(template);
@@ -259,10 +134,10 @@ const Landing = () => {
     return () => monacoEditor.deltaDecorations(ids, []);
   }, [monacoEditor, monaco]);
 
-  const onSelectChange = (sl) => {
+  /*const onSelectChange = (sl) => {
     console.log("selected Option...", sl);
     setLanguage(sl);
-  };
+  };*/
 
   useEffect(() => {
     if (enterPress && ctrlPress) {
@@ -283,36 +158,37 @@ const Landing = () => {
     setProcessingSave(true);
     const fileName = window.prompt('Inserisci il nome del file', fileNameDefault);
     if (fileName){
-        // Invia il codice al server
-        const msg={
-            name:fileName,
-            code:code
-        }
-    
-        fetch(urlTestsServer, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                },
-            body: JSON.stringify(msg),
-        }).then(response => {
-            console.log(response);
-            if (response.ok) {
-                console.log('File inviato correttamente al server.');
-                window.alert('File salvato con successo in remoto');
-                //setIsModalOpen(true);
-            } else {
-                console.error('Errore durante l\'invio del file al server.');
-                window.alert('Errore durante il salvataggio del test');
-            }
-        })
-        .catch(error => {
-            console.error('Errore durante l\'invio della richiesta al server:', error);
-            window.alert('Errore durante il salvataggio del test');
-        });
+      // Invia il codice al server
+      const msg={
+          name:fileName,
+          code:code
+      }
+  
+      fetch(urlTestsServer, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              },
+          body: JSON.stringify(msg),
+      }).then(response => {
+          console.log(response);
+          if (response.ok) {
+              console.log('File inviato correttamente al server.');
+              window.alert('File salvato con successo in remoto');
+              //setIsModalOpen(true);
+          } else {
+              console.error('Errore durante l\'invio del file al server.');
+              window.alert('Errore durante il salvataggio del test');
+          }
+      })
+      .catch(error => {
+          console.error('Errore durante l\'invio della richiesta al server:', error);
+          window.alert('Errore durante il salvataggio del test');
+      });
     }
     setProcessingSave(false);
   };
+
   const handleSaveAs = () => {
     setProcessingSaveAs(true);
     const fileName = window.prompt('Inserisci il nome del file', 'test.java');
@@ -382,24 +258,24 @@ const Landing = () => {
     //doc.write(htmlContent);
     //doc.close();
 
-setProcessing(false);
+    setProcessing(false);
 
-// Funzione per analizzare il file XML di copertura Jacoco
-function parseJacocoCoverage(xml) {
-  var coverageData = [];
+    // Funzione per analizzare il file XML di copertura Jacoco
+    function parseJacocoCoverage(xml) {
+      var coverageData = [];
 
-  // Esempio di iterazione su tutti gli elementi "<sourcefile>"
-  var classElements = xml.getElementsByTagName("sourcefile");
-  console.log(classElements);
-  for (var i = 0; i < classElements.length; i++) {
-      var classElement = classElements[i];
-      var className = classElement.getAttribute('name');
+      // Esempio di iterazione su tutti gli elementi "<sourcefile>"
+      var classElements = xml.getElementsByTagName("sourcefile");
+      console.log(classElements);
+      for (var i = 0; i < classElements.length; i++) {
+        var classElement = classElements[i];
+        var className = classElement.getAttribute('name');
 
-      // Esempio di estrazione delle informazioni delle linee di codice
-      var lines = classElement.getElementsByTagName('line');
-      //var lineInfo = {};
-      var decs = [];
-      for (var j = 0; j < lines.length; j++) {
+        // Esempio di estrazione delle informazioni delle linee di codice
+        var lines = classElement.getElementsByTagName('line');
+        //var lineInfo = {};
+        var decs = [];
+        for (var j = 0; j < lines.length; j++) {
           var line = lines[j];
           var lineNumber = parseInt(line.getAttribute('nr'));
           var instructionNotCovered = line.getAttribute('mi') != '0';
@@ -424,18 +300,32 @@ function parseJacocoCoverage(xml) {
               options: { inlineClassName: "line.covered" }
             });
           }
-
         }
 
         setDecorations(decs);
-
-    }
-  };
+      }
+    };
 
   // Funzione per ottenere l'output dal file XML di copertura Jacoco
-};
+  };
 
-    
+  function handleThemeChange(th) {
+    const theme = th;
+    console.log("theme...", theme);
+
+    if (["light", "vs-dark"].includes(theme.value)) {
+      setTheme(theme);
+    } else {
+      defineTheme(theme.value).then((_) => setTheme(theme));
+    }
+  }
+  useEffect(() => {
+    defineTheme("oceanic-next").then((_) =>
+      setTheme({ value: "oceanic-next", label: "Oceanic Next" })
+    );
+  }, []);
+
+  /*
 
   const checkStatus = async (token) => {
     const options = {
@@ -472,22 +362,6 @@ function parseJacocoCoverage(xml) {
     }
   };
 
-  function handleThemeChange(th) {
-    const theme = th;
-    console.log("theme...", theme);
-
-    if (["light", "vs-dark"].includes(theme.value)) {
-      setTheme(theme);
-    } else {
-      defineTheme(theme.value).then((_) => setTheme(theme));
-    }
-  }
-  useEffect(() => {
-    defineTheme("oceanic-next").then((_) =>
-      setTheme({ value: "oceanic-next", label: "Oceanic Next" })
-    );
-  }, []);
-
   const showSuccessToast = (msg) => {
     toast.success(msg || `Compiled Successfully!`, {
       position: "top-right",
@@ -511,7 +385,7 @@ function parseJacocoCoverage(xml) {
     });
   };
  
-  
+  //*/
 
   return (
     <>
@@ -599,34 +473,5 @@ function parseJacocoCoverage(xml) {
     </>
   );
 
-  /*return(
-    <>
-      <ToastContainer
-        position="top-right"
-        autoClose={2000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
-
-      <button
-        onClick={handleCompile}
-        disabled={!code}
-        className={classnames(
-          "mt-4 border-2 border-black z-10 rounded-md shadow-[5px_5px_0px_0px_rgba(0,0,0)] px-12 py-2 hover:shadow transition duration-200 bg-white flex-shrink-0",
-          !code ? "opacity-50" : ""
-        )}
-      >
-        {processing? "Processing..." : "Compile and Execute"}
-      </button>
-
-      <div id = "prova" className="h-80 w-full bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500">
-      </div>
-    </>
-  )*/
 };
 export default Landing;

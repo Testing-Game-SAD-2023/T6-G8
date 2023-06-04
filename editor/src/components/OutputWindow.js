@@ -1,64 +1,60 @@
 import React from "react";
 
-const OutputWindow = ({ outputDetails }) => {
-  const getOutput = () => {
-    let statusId = outputDetails?.status?.id;
-
-    if (statusId === 6) {
-      // compilation error
-      return (
-        <pre className="px-2 py-1 font-normal text-xs text-red-500">
-          {atob(outputDetails?.compile_output)}
-        </pre>
-      );
-    } else if (statusId === 3) {
-      return (
-        <pre className="px-2 py-1 font-normal text-xs text-green-500">
-          {atob(outputDetails.stdout) !== null
-            ? `${atob(outputDetails.stdout)}`
-            : null}
-        </pre>
-      );
-    } else if (statusId === 5) {
-      return (
-        <pre className="px-2 py-1 font-normal text-xs text-red-500">
-          {`Time Limit Exceeded`}
-        </pre>
-      );
-    } else {
-      return (
-        <pre className="px-2 py-1 font-normal text-xs text-red-500">
-          {atob(outputDetails?.stderr)}
-        </pre>
-      );
-    }
-  };
-
-  // ritorna l'output sulla base della risposta alla request AXIOS
-  /*/return (
+const OutputNull = ({}) => {
+  return (
     <>
       <h1 className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 mb-2">
         Output
       </h1>
       <div className="w-full h-56 bg-[#1e293b] rounded-md text-white font-normal text-sm overflow-y-auto">
-        {outputDetails ? <>{getOutput()}</> : null}
       </div>
     </>
-  ); //*/
+  ); 
+}
 
-  // ritorna l'output corrispondente alla stringa di testo passata in ingresso
+const OutputCoverage = ({html}) => {
+  /*class MyComponent extends React.Component {  render() {    
+    // HTML da parsare    
+    //const html = '<div><h1>Title</h1><p>Paragraph</p></div>';    
+    // Effettua il parsing dell'HTML in componenti React    
+    const parsedHTML = parse(html);    
+    return <div>{parsedHTML}</div>;  }}*/
+    return (
+      <>
+      <h1 className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 mb-2">
+          Output
+      </h1>
+      <pre className="w-full h-56 bg-[#1e293b] rounded-md text-white font-normal text-sm overflow-y-auto">
+        Il test ha coperto 2 righe di codice.
+      </pre>
+      </>
+    );
   /*return (
     <>
       <h1 className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 mb-2">
-        Output
+          Output
       </h1>
-      <div className="w-full h-56 bg-[#1e293b] rounded-md text-white font-normal text-sm overflow-y-auto">
-        <pre className="px-2 py-1 font-normal text-xs text-red-500">
-          {outputDetails}
-        </pre>
-      </div>
+      <div className="w-full h-56 bg-[#1e293b] rounded-md text-white font-normal text-sm overflow-y-auto"
+      dangerouslySetInnerHTML={{ __html: html }}></div>
     </>
-  );*/
+    );//*/
+}
+
+
+const OutputWindow = ({coverageDisplay, parsedXml}) => {
+  if (!coverageDisplay) {
+      return <OutputNull  />;
+  }
+  /*/ restituiamo la coverage come pagina html
+  else
+  {
+      return <CoverageWindow url={url} code={code}/>;
+  } //*/
+  // restituiamo la coverage all'interno dell'editor
+  else
+  {
+      return <OutputCoverage html={parsedXml}/>;
+  } //*/
 };
 
 export default OutputWindow;
