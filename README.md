@@ -9,5 +9,10 @@
 - download node.js: `https://nodejs.org/en/download`
 - in 'Node.js command prompt': `npm install`
 - `path project`
+- `folder "server"`
+- `node ClassServer.js` to run the server of the test classes
+- `node CoverageServer.js` to run the server of the coverage
+- `node TestsServer.js` to run the server of the test saved
+- `folder "editor"`
 - `npm start` to run the project.
 
