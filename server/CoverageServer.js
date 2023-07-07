@@ -28,8 +28,9 @@ const server = http.createServer((req, res) => {
             const xmlContent = fs.readFileSync('./coverage/jacoco.xml', 'utf-8');
 
             const combinedData = {
-              html: htmlContent,
-              xml: xmlContent,
+              Error: false,
+              outCompile: "Il test ha coperto due righe di codice.",
+              Coverage: xmlContent,
             };
 
             res.statusCode = 200;

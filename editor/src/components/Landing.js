@@ -93,6 +93,9 @@ const Landing = () => {
   const [htmlContent, setHtmlContent] = useState('');
   const [parsedXml, setParsedXml] = useState('');
 
+  const [outputString, setOutputString] = useState('Compila per avere un output.');
+  const [errorCompile, setErrorCompile] = useState(false);
+
   async function handleEditorDidMount(monacoEditor, monaco) {
     setVars({ monacoEditor, monaco });
   }
@@ -224,28 +227,34 @@ const Landing = () => {
         body: JSON.stringify(msg),
     }).then(response => response.json())
     .then(data => {
-      setHtmlContent(data.html);
-      //var iframe = document.getElementById('output');
-      //document.open();
-      //document.write(data.html);
-      //var iframedoc = iframe.contentDocument || iframe.contentWindow.document;
-      //iframedoc.body.innerHTML = data.html;
+      setErrorCompile(data.Error);
+      setOutputString(data.outCompile);
 
-      /*const div = document.createElement('div');        
-      div.innerHTML = data.html;        
-      // Estrai il testo        
-      const text = div.textContent;        
-      // Visualizza il testo nell'elemento di output        
-      const outputElement = document.getElementById('output');        
-      outputElement.textContent = text;*/
+      if(!errorCompile){
+      
 
-     
-      var parser = new DOMParser();
-      var xmlDoc = parser.parseFromString(data.xml, 'text/xml');
-      console.log(xmlDoc);
-      parseJacocoCoverage(xmlDoc);
-      setCoverageDisplay(true);
-      // Puoi accedere al documento XML tramite xmlDoc e lavorare con i suoi elementi e attributi
+        //var iframe = document.getElementById('output');
+        //document.open();
+        //document.write(data.html);
+        //var iframedoc = iframe.contentDocument || iframe.contentWindow.document;
+        //iframedoc.body.innerHTML = data.html;
+
+        /*const div = document.createElement('div');        
+        div.innerHTML = data.html;        
+        // Estrai il testo        
+        const text = div.textContent;        
+        // Visualizza il testo nell'elemento di output        
+        const outputElement = document.getElementById('output');        
+        outputElement.textContent = text;*/
+
+      
+        var parser = new DOMParser();
+        var xmlDoc = parser.parseFromString(data.Coverage, 'text/xml');
+        console.log(xmlDoc);
+        parseJacocoCoverage(xmlDoc);
+        setCoverageDisplay(true);
+        // Puoi accedere al documento XML tramite xmlDoc e lavorare con i suoi elementi e attributi
+      }
     })
     .catch(error => {
         console.error('Errore durante l\'invio della richiesta al server:', error);
@@ -465,7 +474,7 @@ const Landing = () => {
           </div>
           <div id = "prova" className = "overlay rounded-md overflow-hidden w-full h-full shadow-4xl">
           </div>
-          <OutputWindow coverageDisplay={coverageDisplay} html={htmlContent} />
+          <OutputWindow outputString={outputString} coverageDisplay={coverageDisplay} />
           <div className="flex flex-col items-end">
           </div>
         </div>
