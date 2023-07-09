@@ -23,7 +23,7 @@ import G8.T6.EditorApp.Model.*;
 @RequestMapping("/editor")
 public class EditorAppController {
     private Partita partita;
-    private Coverage coverageResult; //cancellare
+    private Coverage coverageResult; 
 
     // TODO: mettere le variabili d'ambiente
     private final String urlCoverageServer = "http://coverage-server:3001/"; 
