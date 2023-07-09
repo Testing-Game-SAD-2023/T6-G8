@@ -36,6 +36,7 @@ If you wanto to try the application with three simulated servers:
 	- `folder "EditorApp"`
 		- `docker build -t backend .` to build the backend image
 		- `docker run -p 8080:8080 backend` to run the backend container
+- open a Browser and connect to `http://localhost:3000`
 
 If you wanto to try the application with three simulated servers:
 - `folder "codice"`
