@@ -28,6 +28,7 @@ If you wanto to try the application with three simulated servers:
 ## Installations and setup with Docker
 - git clone `https://github.com/Testing-Game-SAD-2023/T6-G8`
 - download Docker Desktop: `https://www.docker.com/products/docker-desktop/`
+- open `Docker Desktop`
 - `folder "codice"`
 	- `folder "editor"`
 		- `docker build -t frontend .` to build the frontend image
