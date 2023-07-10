@@ -42,10 +42,18 @@ If you wanto to try the application with three simulated servers:
 - `folder "codice"`
 	- `docker-compose up` to build and run all the containers
 
+## ENV Variables
+To make the application context-independent we used Env Variables to specify the 
+path to other containers/servers that expose the APIs/services needed by our task.
+Based on the configuration, and without using any service discovery technology, it's
+possible to specify the path to the appropriate service containers during the Docker-container 
+execution with the command
+` docker run -e CLASS_SERVER_URL=http://my-class-server:3002/ image_name `
+
 
 ## API Documentation
 APIs have been documented using the springdoc-openapi java library to automate and 
-standardize the documentation process.
-	- To access the documentation, simply run the backend server and navigate to 
+standardize the documentation process. 
+To access the documentation, simply run the backend server and navigate to 
  	  `http://localhost:8080/swagger-ui/index.html`
 
