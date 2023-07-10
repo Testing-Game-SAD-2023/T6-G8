@@ -49,6 +49,8 @@ Based on the configuration, and without using any service discovery technology, 
 possible to specify the path to the appropriate service containers during the Docker-container 
 execution with the command
 ` docker run -e CLASS_SERVER_URL=http://my-class-server:3002/ image_name `
+If accessing remotely, please refer to the following link to read the documentation
+` https://app.swaggerhub.com/apis/ZAIRAABDELMAJID/EditorG8/1.0.0 `
 
 
 ## API Documentation
