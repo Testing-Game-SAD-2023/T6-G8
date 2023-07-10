@@ -15,7 +15,7 @@
 	- `folder "editor"`
 		- `npm start` to run the frontend
 
-If you wanto to try the application with three simulated servers:
+If you want to try the application with three simulated servers:
 - `folder "codice"`
 	- `folder "ClassServer"`
 		- `node ClassServer.js` to run the server of the test classes
@@ -41,14 +41,17 @@ If you wanto to try the application with three simulated servers:
 If you wanto to try the application with three simulated servers:
 - `folder "codice"`
 	- `docker-compose up` to build and run all the containers
+- open a Browser and connect to `http://localhost:3000`
+
 
 ## ENV Variables
 To make the application context-independent we used Env Variables to specify the 
 path to other containers/servers that expose the APIs/services needed by our task.
 Based on the configuration, and without using any service discovery technology, it's
 possible to specify the path to the appropriate service containers during the Docker-container 
-execution with the command
-` docker run -e CLASS_SERVER_URL=http://my-class-server:3002/ image_name `
+execution of the backend service with the command
+` docker run -e COVERAGE_SERVER_URL=http://my-coverage-server:3001/ -e CLASS_SERVER_URL=http://my-class-server:3002/ -e TESTS_SERVER_URL=http://my-tests-server:3003/ backend `
+Alternatively, it is possible to run all the containers with the command `docker-compose up` changing the environment variables defined in the .env file that is located in the `folder "codice"`
 
 ## API Documentation
 APIs have been documented using the springdoc-openapi java library to automate and 
