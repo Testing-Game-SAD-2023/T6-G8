@@ -61,4 +61,3 @@ To access the documentation, simply run the backend server and navigate to
 If accessing remotely, please refer to the following link to read the documentation
 ` https://app.swaggerhub.com/apis/ZAIRAABDELMAJID/EditorG8/1.0.0 `
 
-
