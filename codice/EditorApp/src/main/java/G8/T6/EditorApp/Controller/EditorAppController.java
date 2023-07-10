@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -25,10 +25,14 @@ public class EditorAppController {
     private Partita partita;
     private Coverage coverageResult; 
 
-    // TODO: mettere le variabili d'ambiente
-    private final String urlCoverageServer = "http://coverage-server:3001/"; 
-    private final String urlClassServer = "http://class-server:3002/"; 
-    private final String urlTestsServer = "http://tests-server:3003/"; 
+    @Value("${COVERAGE_SERVER_URL}")
+    private String urlCoverageServer; 
+
+    @Value("${CLASS_SERVER_URL}")
+    private String urlClassServer; 
+
+    @Value("${TESTS_SERVER_URL}")
+    private String urlTestsServer; 
     
     private final RestTemplate restTemplate = new RestTemplate(); // Inietta un'istanza di RestTemplate
 
