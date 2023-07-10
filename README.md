@@ -43,3 +43,9 @@ If you wanto to try the application with three simulated servers:
 	- `docker-compose up` to build and run all the containers
 
 
+## API Documentation
+APIs have been documented using the springdoc-openapi java library to automate and 
+standardize the documentation process.
+	- To access the documentation, simply run the backend server and navigate to 
+ 	  `http://localhost:8080/swagger-ui/index.html`
+
