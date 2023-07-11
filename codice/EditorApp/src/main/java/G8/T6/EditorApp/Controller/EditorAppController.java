@@ -107,7 +107,7 @@ public class EditorAppController {
 
             if (messaggioJson != null) {
                 partita.setCodiceTest(messaggioJson.getMsg());
-                
+                return "Codice aggiornato";
             }
         } catch (JsonMappingException e) {
             e.printStackTrace();
