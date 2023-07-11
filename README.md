@@ -50,7 +50,7 @@ path to other containers/servers that expose the APIs/services needed by our tas
 Based on the configuration, and without using any service discovery technology, it's
 possible to specify the path to the appropriate service containers during the Docker-container 
 execution of the backend service with the command
-` docker run -e COVERAGE_SERVER_URL=http://my-coverage-server:3001/ -e CLASS_SERVER_URL=http://my-class-server:3002/ -e TESTS_SERVER_URL=http://my-tests-server:3003/ backend `
+` docker run -p 8080:8080 -e COVERAGE_SERVER_URL=http://my-coverage-server:3001/ -e CLASS_SERVER_URL=http://my-class-server:3002/ -e TESTS_SERVER_URL=http://my-tests-server:3003/ backend `
 Alternatively, it is possible to run all the containers with the command `docker-compose up` changing the environment variables defined in the .env file that is located in the `folder "codice"`
 
 ## API Documentation
