@@ -44,6 +44,11 @@ If you wanto to try the application with three simulated servers:
 - open a Browser and connect to `http://localhost:3000`
 
 
+## Port Mapping
+You can change the exposed port on your Docker container when you run it with the option "-p" while launching the command:
+	`docker run -p <origin_port>:<destination_port> ...`
+
+
 ## ENV Variables
 To make the application context-independent we used Env Variables to specify the 
 path to other containers/servers that expose the APIs/services needed by our task.
@@ -61,3 +66,5 @@ To access the documentation, simply run the backend server and navigate to
 If accessing remotely, please refer to the following link to read the documentation
 ` https://app.swaggerhub.com/apis/ZAIRAABDELMAJID/EditorG8/1.0.0 `
 
+## Teams we interacted with
+In order to more easily integrate our task in the application environment, we interacted with Team G14 for Task 5 and Team G31 for Task 7 to match our interfaces with.
